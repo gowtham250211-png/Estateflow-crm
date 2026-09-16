@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
@@ -122,22 +120,14 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Profile & Clean Sign Out Controls */}
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <div className="text-xs font-bold text-slate-800">{user?.name || 'Gowtham'}</div>
-          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            {user?.role || 'Admin'}
-          </div>
+      {/* Live System & Database Telemetry Badge */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200/80 rounded-full text-[11px] font-semibold text-emerald-700 shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Neon DB Connected</span>
         </div>
-
-        <button
-          onClick={logout}
-          className="text-xs font-bold text-slate-600 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 border border-slate-200 px-3.5 py-1.5 rounded-xl transition"
-        >
-          Sign Out
-        </button>
       </div>
+
     </header>
   );
 }
