@@ -9,7 +9,10 @@ export default function Navbar() {
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+
   const searchRef = useRef(null);
+  const notifRef = useRef(null);
 
   // Live search debounced query
   useEffect(() => {
@@ -35,11 +38,14 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Close dropdown on outside click
+  // Handle outside clicks for search and notifications
   useEffect(() => {
     function handleClickOutside(e) {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setIsOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -49,20 +55,20 @@ export default function Navbar() {
   const handleSelectLead = (lead) => {
     setIsOpen(false);
     setQuery('');
-    navigate(`/leads`);
+    navigate('/leads');
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && query.trim()) {
       setIsOpen(false);
-      navigate(`/leads`);
+      navigate('/leads');
     }
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-8 flex justify-between items-center z-30 shadow-sm relative">
+    <header className="h-16 bg-white border-b border-slate-200 px-8 flex justify-between items-center z-30 shadow-xs relative">
       
-      {/* Functional Live Search Input */}
+      {/* Search Bar with Autocomplete Dropdown */}
       <div className="relative w-80" ref={searchRef}>
         <div className="relative">
           <input
@@ -77,6 +83,7 @@ export default function Navbar() {
           <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
           {query && (
             <button
+              type="button"
               onClick={() => { setQuery(''); setIsOpen(false); }}
               className="absolute right-3 top-2 text-slate-400 hover:text-slate-600 text-xs"
             >
@@ -85,7 +92,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Live Search Floating Dropdown */}
         {isOpen && (
           <div className="absolute top-12 left-0 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50 divide-y divide-slate-100 animate-in fade-in duration-150">
             <div className="px-3 py-2 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex justify-between items-center">
@@ -120,22 +126,70 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Top Right: System Status & Alerts */}
+      {/* Top Right Features: Region, Live Activity Bell & System Status */}
       <div className="flex items-center gap-3">
-        {/* Alerts Bell */}
-        <button
-          onClick={() => navigate('/leads')}
-          title="View Recent Activity"
-          className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white"></span>
-        </button>
+        {/* Hub / Territory Pill */}
+        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-600 select-none">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+          <span>Chennai Region</span>
+        </div>
 
-        {/* Enterprise System Badge */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200/70 rounded-full text-[11px] font-semibold text-emerald-700 shadow-xs select-none">
+        {/* Date Display */}
+        <div className="hidden md:flex items-center gap-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-medium text-slate-500 select-none">
+          <span>📅</span>
+          <span>{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+        </div>
+
+        {/* Notifications Popover */}
+        <div className="relative" ref={notifRef}>
+          <button
+            type="button"
+            onClick={() => setNotifOpen(!notifOpen)}
+            title="Activity Feed"
+            className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-600 rounded-full ring-2 ring-white"></span>
+          </button>
+
+          {notifOpen && (
+            <div className="absolute right-0 top-12 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-3 space-y-2 animate-in fade-in duration-150">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-100 px-1">
+                <span className="text-[11px] font-bold text-slate-700 uppercase">Recent Activity</span>
+                <span
+                  onClick={() => setNotifOpen(false)}
+                  className="text-[10px] text-indigo-600 font-semibold cursor-pointer hover:underline"
+                >
+                  Dismiss
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                <div
+                  onClick={() => { setNotifOpen(false); navigate('/leads'); }}
+                  className="p-2.5 bg-slate-50 hover:bg-indigo-50/50 rounded-xl text-xs cursor-pointer transition"
+                >
+                  <div className="font-semibold text-slate-800">Token Advance Logged</div>
+                  <div className="text-[11px] text-slate-500">Unit #B-402 advance deposit confirmed.</div>
+                  <div className="text-[10px] text-slate-400 mt-1">12 mins ago</div>
+                </div>
+
+                <div
+                  onClick={() => { setNotifOpen(false); navigate('/leads'); }}
+                  className="p-2.5 bg-slate-50 hover:bg-indigo-50/50 rounded-xl text-xs cursor-pointer transition"
+                >
+                  <div className="font-semibold text-slate-800">Site Visit Scheduled</div>
+                  <div className="text-[11px] text-slate-500">Priya confirmed for Green Acres tour.</div>
+                  <div className="text-[10px] text-slate-400 mt-1">1 hour ago</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Enterprise System Telemetry Badge */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200/80 rounded-full text-[11px] font-semibold text-emerald-700 shadow-xs select-none">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>System Operational</span>
         </div>
