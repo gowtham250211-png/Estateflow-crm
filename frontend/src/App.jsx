@@ -5,10 +5,14 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
+import LeadDetails from './pages/LeadDetails';
 import Properties from './pages/Properties';
 import Bookings from './pages/Bookings';
 import SiteVisits from './pages/SiteVisits';
 import Invoices from './pages/Invoices';
+import Tasks from './pages/Tasks';
+import Documents from './pages/Documents';
+import Settings from './pages/Settings';
 import Login from './pages/Login';
 
 function ProtectedLayout({ children }) {
@@ -34,12 +38,24 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          
+          {/* Sales & Assets */}
           <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
-          <Route path="/leads" element={<ProtectedLayout><Leads /></ProtectedLayout>} />
           <Route path="/properties" element={<ProtectedLayout><Properties /></ProtectedLayout>} />
+          <Route path="/leads" element={<ProtectedLayout><Leads /></ProtectedLayout>} />
+          <Route path="/leads/:id" element={<ProtectedLayout><LeadDetails /></ProtectedLayout>} />
           <Route path="/bookings" element={<ProtectedLayout><Bookings /></ProtectedLayout>} />
+          
+          {/* Operations */}
           <Route path="/site-visits" element={<ProtectedLayout><SiteVisits /></ProtectedLayout>} />
+          <Route path="/tasks" element={<ProtectedLayout><Tasks /></ProtectedLayout>} />
+          <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
           <Route path="/invoices" element={<ProtectedLayout><Invoices /></ProtectedLayout>} />
+          
+          {/* System */}
+          <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
+          
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

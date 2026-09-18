@@ -22,9 +22,23 @@ export default function LeadDetails() {
   }, [id]);
 
   const handleStageChange = async (e) => {
-    const updated = { ...lead, stage: e.target.value };
-    await leadService.update(id, updated);
-    setLead(updated);
+    const newStage = e.target.value;
+    // Build the payload with the field names the backend's LeadRequest DTO expects
+    // (assignedToId / projectId), rather than spreading the nested assignedTo/project
+    // objects from the GET response — sending those directly would silently null out
+    // the lead's assigned salesperson and project on every stage change.
+    const payload = {
+      name: lead.name,
+      phone: lead.phone,
+      email: lead.email,
+      budget: lead.budget,
+      stage: newStage,
+      assignedToId: lead.assignedTo ? lead.assignedTo.id : null,
+      projectId: lead.project ? lead.project.id : null,
+      followUpDate: lead.followUpDate,
+    };
+    await leadService.update(id, payload);
+    setLead({ ...lead, stage: newStage });
   };
 
   const handleAddNote = async (e) => {
@@ -53,7 +67,7 @@ export default function LeadDetails() {
           <div className="space-y-2 text-xs border-t pt-4">
             <div><span className="font-bold text-slate-500">PHONE:</span> {lead.phone}</div>
             <div><span className="font-bold text-slate-500">EMAIL:</span> {lead.email}</div>
-            <div><span className="font-bold text-slate-500">BUDGET:</span> ₹{(lead.budget / 100000).toFixed(2)} Lakhs</div>
+            <div><span className="font-bold text-slate-500">BUDGET:</span> {lead.budget ? `₹${(lead.budget / 100000).toFixed(2)} Lakhs` : 'Open'}</div>
             <div><span className="font-bold text-slate-500">FOLLOW-UP:</span> {lead.followUpDate || 'None'}</div>
           </div>
 
