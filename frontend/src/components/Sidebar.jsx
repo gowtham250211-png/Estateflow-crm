@@ -1,166 +1,156 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar() {
+function Sidebar() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+  const { user, logout } = useAuth();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
 
-  const displayName = user?.name || 'Account';
-  const displayEmail = user?.email || '';
-  const displayRole = user?.role || '';
-  const initial = displayName.charAt(0).toUpperCase() || '?';
-
-  // Close profile dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
+  // Safely extract user profile details
+  let storedUser = user;
+  if (!storedUser) {
+    try {
+      storedUser = JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      storedUser = {};
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const email = storedUser?.email || localStorage.getItem('user_email') || 'gowtham@crm.com';
+  const rawName = storedUser?.name || email.split('@')[0] || 'Gowtham';
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const displayRole = (storedUser?.role || 'ADMIN').replace('ROLE_', '').toUpperCase();
+  const initial = displayName.charAt(0).toUpperCase();
+
+  const handleSignOut = () => {
+    logout();
     navigate('/login');
   };
 
-  const linkClasses = ({ isActive }) =>
-    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-      isActive
-        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-    }`;
+  const navLinks = [
+    {
+      group: 'SALES & ASSETS',
+      items: [
+        { name: 'Dashboard', path: '/', icon: '📊' },
+        { name: 'Properties & Units', path: '/properties', icon: '🏢' },
+        { name: 'Leads & Pipeline', path: '/leads', icon: '👥' },
+        { name: 'Closed Bookings', path: '/bookings', icon: '🔒' },
+      ],
+    },
+    {
+      group: 'OPERATIONS',
+      items: [
+        { name: 'Site Visits', path: '/site-visits', icon: '📅' },
+        { name: 'Tasks & Reminders', path: '/tasks', icon: '⏰' },
+        { name: 'Documents', path: '/documents', icon: '📁' },
+        { name: 'Invoices & Payments', path: '/invoices', icon: '💳' },
+      ],
+    },
+    {
+      group: 'SYSTEM',
+      items: [
+        { name: 'Settings', path: '/settings', icon: '⚙️' },
+      ],
+    },
+  ];
 
   return (
-    <aside className="w-64 bg-[#111827] text-white flex flex-col justify-between h-screen sticky top-0 shrink-0 border-r border-slate-800 select-none">
-      <div className="p-5 space-y-6 overflow-y-auto">
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 px-1">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-base shadow-lg shadow-blue-500/30">
-            E
-          </div>
-          <div>
-            <h1 className="font-extrabold text-sm tracking-wider text-white">
-              ESTATE<span className="text-blue-400">FLOW</span>
-            </h1>
-            <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-              Sales & Asset Command
-            </p>
-          </div>
+    <aside className="w-64 bg-[#0d131f] text-slate-300 flex flex-col h-screen border-r border-slate-800 shrink-0 select-none">
+      {/* Brand Header */}
+      <div className="p-5 flex items-center gap-3 border-b border-slate-800/80">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-blue-500/20">
+          E
         </div>
-
-        {/* Navigation Menus */}
-        <nav className="space-y-6">
-          {/* SECTION 1: SALES & ASSETS */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3">
-              Sales & Assets
-            </span>
-            <div className="mt-1 space-y-1">
-              <NavLink to="/" end className={linkClasses}>
-                <span className="text-sm">📊</span>
-                <span>Dashboard</span>
-              </NavLink>
-              <NavLink to="/properties" className={linkClasses}>
-                <span className="text-sm">🏢</span>
-                <span>Properties & Units</span>
-              </NavLink>
-              <NavLink to="/leads" className={linkClasses}>
-                <span className="text-sm">👥</span>
-                <span>Leads & Pipeline</span>
-              </NavLink>
-              <NavLink to="/bookings" className={linkClasses}>
-                <span className="text-sm">🔒</span>
-                <span>Closed Bookings</span>
-              </NavLink>
-            </div>
-          </div>
-
-          {/* SECTION 2: OPERATIONS */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3">
-              Operations
-            </span>
-            <div className="mt-1 space-y-1">
-              <NavLink to="/site-visits" className={linkClasses}>
-                <span className="text-sm">📅</span>
-                <span>Site Visits</span>
-              </NavLink>
-              <NavLink to="/tasks" className={linkClasses}>
-                <span className="text-sm">⏰</span>
-                <span>Tasks & Reminders</span>
-              </NavLink>
-              <NavLink to="/documents" className={linkClasses}>
-                <span className="text-sm">📁</span>
-                <span>Documents</span>
-              </NavLink>
-              <NavLink to="/invoices" className={linkClasses}>
-                <span className="text-sm">💳</span>
-                <span>Invoices & Payments</span>
-              </NavLink>
-            </div>
-          </div>
-
-          {/* SECTION 3: SYSTEM */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3">
-              System
-            </span>
-            <div className="mt-1 space-y-1">
-              <NavLink to="/settings" className={linkClasses}>
-                <span className="text-sm">⚙️</span>
-                <span>Settings</span>
-              </NavLink>
-            </div>
-          </div>
-        </nav>
+        <div>
+          <h1 className="font-black text-sm tracking-wider text-white">
+            ESTATE<span className="text-blue-500">FLOW</span>
+          </h1>
+          <p className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">
+            Sales & Asset Command
+          </p>
+        </div>
       </div>
 
-      {/* Operator Profile Card & Dropdown */}
-      <div className="p-4 border-t border-slate-800/80 relative" ref={menuRef}>
-        {menuOpen && (
-          <div className="absolute bottom-20 left-4 right-4 bg-[#1f2937] border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 space-y-1 animate-in fade-in duration-150">
-            <div className="px-3 py-2 border-b border-slate-700/60">
-              <div className="text-[11px] font-bold text-white">{displayName}</div>
-              <div className="text-[10px] text-slate-400">{displayEmail}</div>
+      {/* Navigation Sections */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        {navLinks.map((section) => (
+          <div key={section.group} className="space-y-1">
+            <h2 className="px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+              {section.group}
+            </h2>
+            <div className="space-y-0.5 mt-1">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
+                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                    }`
+                  }
+                >
+                  <span className="text-sm">{item.icon}</span>
+                  <span>{item.name}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Account Profile Card */}
+      <div className="relative p-3 border-t border-slate-800/80">
+        {showAccountMenu && (
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#131b2e] border border-slate-700/80 rounded-2xl shadow-2xl p-2 z-50 space-y-1">
+            <div className="px-3 py-2 border-b border-slate-700/50">
+              <p className="text-xs font-bold text-white truncate">{displayName}</p>
+              <p className="text-[11px] text-slate-400 truncate">{email}</p>
             </div>
             <button
-              onClick={() => { setMenuOpen(false); navigate('/settings'); }}
-              className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition"
+              onClick={() => {
+                setShowAccountMenu(false);
+                navigate('/settings');
+              }}
+              className="w-full text-left px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition cursor-pointer flex items-center gap-2"
             >
-              Account Preferences
+              <span>⚙️</span> Account Preferences
             </button>
             <button
-              onClick={handleLogout}
-              className="w-full text-left px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+              onClick={handleSignOut}
+              className="w-full text-left px-3 py-2 text-xs font-bold text-rose-400 hover:bg-rose-500/10 rounded-xl transition cursor-pointer flex items-center gap-2"
             >
-              Sign Out
+              <span>🚪</span> Sign Out
             </button>
           </div>
         )}
 
-        <div
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/40 hover:bg-slate-800/80 transition cursor-pointer border border-slate-800"
+        <button
+          type="button"
+          onClick={() => setShowAccountMenu(!showAccountMenu)}
+          className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-800/60 transition cursor-pointer group"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center font-bold text-blue-400 text-xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 font-extrabold text-sm flex items-center justify-center shrink-0 shadow-xs">
               {initial}
             </div>
-            <div>
-              <div className="text-xs font-bold text-white leading-none">{displayName}</div>
-              <div className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{displayRole}</div>
+            <div className="text-left min-w-0">
+              <p className="text-xs font-bold text-slate-200 truncate group-hover:text-white">
+                {displayName}
+              </p>
+              <p className="text-[10px] font-semibold text-blue-400 tracking-wider">
+                {displayRole}
+              </p>
             </div>
           </div>
-          <span className="text-slate-400 text-xs">•••</span>
-        </div>
+          <span className="text-slate-500 group-hover:text-slate-300 text-xs shrink-0">•••</span>
+        </button>
       </div>
     </aside>
   );
 }
+
+export default Sidebar;
